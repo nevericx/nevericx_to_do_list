@@ -112,19 +112,16 @@ button.delete-btn {
   cursor: pointer;
 }
 
-/* 완료 리스트 텍스트 스타일 (버튼엔 적용되지 않음) */
 #completedList li span {
   color: #999;
   text-decoration: line-through;
 }
 
-/* 버튼 텍스트엔 취소선 적용하지 않음 */
 #completedList li button,
 #trashList li button {
   text-decoration: none;
 }
 
-/* 비우기 버튼 공통 스타일 */
 .empty-btn {
   display: none;
   width: 100%;
@@ -141,7 +138,6 @@ button.delete-btn {
   background: #d9363e;
 }
 
-/* 리스트 컨테이너 표시 제어 */
 .list-container {
   display: none;
 }
