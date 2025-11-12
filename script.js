@@ -1,118 +1,193 @@
-const taskInput = document.getElementById('taskInput');
-const addBtn = document.getElementById('addBtn');
-const todoList = document.getElementById('todoList');
-const completedList = document.getElementById('completedList');
-const trashList = document.getElementById('trashList');
-const tabs = document.querySelectorAll('.tab');
-const lists = document.querySelectorAll('.list');
-const dateDisplay = document.getElementById('dateDisplay');
-const completedContainer = document.getElementById('completedContainer');
-const trashContainer = document.getElementById('trashContainer');
-const emptyCompletedBtn = document.getElementById('emptyCompletedBtn');
-const emptyTrashBtn = document.getElementById('emptyTrashBtn');
+const dateTitle = document.getElementById("dateTitle");
+function updateDate() {
+  const now = new Date();
+  dateTitle.textContent = `${now.getMonth() + 1}월 ${now.getDate()}일 오늘 할 일`;
+}
+updateDate();
+setInterval(() => {
+  const now = new Date();
+  if (now.getHours() === 0 && now.getMinutes() === 0) updateDate();
+}, 60000);
 
-addBtn.addEventListener('click', addTask);
-tabs.forEach(tab => tab.addEventListener('click', switchTab));
-emptyCompletedBtn.addEventListener('click', emptyCompleted);
-emptyTrashBtn.addEventListener('click', emptyTrash);
+const tabs = document.querySelectorAll(".tab");
+const input = document.getElementById("taskInput");
+const addBtn = document.getElementById("addBtn");
+const clearCompletedBtn = document.getElementById("clearCompletedBtn");
+const clearTrashBtn = document.getElementById("clearTrashBtn");
+const themeToggle = document.getElementById("themeToggle");
+
+const todoList = document.getElementById("todoList");
+const completedList = document.getElementById("completedList");
+const trashList = document.getElementById("trashList");
+
+let tasks = { todo: [], completed: [], trash: [] };
+
+window.addEventListener("DOMContentLoaded", () => {
+  const saved = localStorage.getItem("tasks");
+  const savedTheme = localStorage.getItem("theme");
+
+  if (saved) tasks = JSON.parse(saved);
+  renderAll();
+
+  if (savedTheme === "dark") {
+    document.body.classList.add("dark");
+    themeToggle.textContent = "☀️";
+  } else {
+    themeToggle.textContent = "🌙";
+  }
+});
+
+tabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    tabs.forEach((t) => t.classList.remove("active"));
+    tab.classList.add("active");
+
+    document.querySelectorAll(".list, .tab-content").forEach(el =>
+      el.classList.remove("active")
+    );
+
+    if (tab.dataset.tab === "todo") {
+      todoList.classList.add("active");
+    } else if (tab.dataset.tab === "completed") {
+      document.getElementById("completedSection").classList.add("active");
+      completedList.classList.add("active");
+    } else if (tab.dataset.tab === "trash") {
+      document.getElementById("trashSection").classList.add("active");
+      trashList.classList.add("active");
+    }
+
+    clearCompletedBtn.classList.add("hidden");
+    clearTrashBtn.classList.add("hidden");
+    if (tab.dataset.tab === "completed") clearCompletedBtn.classList.remove("hidden");
+    if (tab.dataset.tab === "trash") clearTrashBtn.classList.remove("hidden");
+  });
+});
+
+addBtn.addEventListener("click", addTask);
+input.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") addTask();
+});
 
 function addTask() {
-  const text = taskInput.value.trim();
+  const text = input.value.trim();
   if (!text) return;
-  const li = createTodoItem(text);
-  todoList.appendChild(li);
-  taskInput.value = '';
+
+  const task = { text };
+  tasks.todo.push(task);
+  saveData();
+  renderAll();
+
+  input.value = "";
+  input.focus();
 }
 
-function updateDate() {
-  const today = new Date();
-  const month = today.getMonth() + 1;
-  const day = today.getDate();
-  dateDisplay.textContent = `📅 ${month}월 ${day}일`;
+function renderAll() {
+  renderList(todoList, tasks.todo, "todo");
+  renderList(completedList, tasks.completed, "completed");
+  renderList(trashList, tasks.trash, "trash");
 }
 
-updateDate();
+function renderList(container, arr, mode) {
+  container.innerHTML = "";
 
-function createTodoItem(text) {
-  const li = document.createElement('li');
-  const span = document.createElement('span');
-  span.textContent = text;
-
-  const completeBtn = document.createElement('button');
-  completeBtn.textContent = '완료';
-  completeBtn.classList.add('complete-btn');
-  completeBtn.addEventListener('click', () => completeTask(li, text));
-
-  const deleteBtn = document.createElement('button');
-  deleteBtn.textContent = '삭제';
-  deleteBtn.classList.add('delete-btn');
-  deleteBtn.addEventListener('click', () => deleteTask(li, text));
-
-  li.append(span, completeBtn, deleteBtn);
-  return li;
-}
-
-function completeTask(li, text) {
-  li.remove();
-  const done = document.createElement('li');
-  const span = document.createElement('span');
-  span.textContent = text;
-  span.classList.add('completed-text');
-
-  const restoreBtn = document.createElement('button');
-  restoreBtn.textContent = '복원';
-  restoreBtn.classList.add('complete-btn');
-  restoreBtn.addEventListener('click', () => restoreTask(done, text));
-
-  done.append(span, restoreBtn);
-  completedList.appendChild(done);
-}
-
-function restoreTask(li, text) {
-  li.remove();
-  const restored = createTodoItem(text);
-  todoList.appendChild(restored);
-}
-
-function deleteTask(li, text) {
-  li.remove();
-  const deleted = document.createElement('li');
-  const span = document.createElement('span');
-  span.textContent = text;
-
-  const restoreBtn = document.createElement('button');
-  restoreBtn.textContent = '복원';
-  restoreBtn.classList.add('complete-btn');
-  restoreBtn.addEventListener('click', () => restoreTask(deleted, text));
-
-  deleted.append(span, restoreBtn);
-  trashList.appendChild(deleted);
-}
-
-function switchTab(e) {
-  const targetTab = e.target.dataset.tab;
-
-  tabs.forEach(tab => tab.classList.remove('active'));
-  e.target.classList.add('active');
-
-  lists.forEach(list => list.classList.remove('active'));
-  document.querySelectorAll('.list-container').forEach(c => c.classList.remove('active'));
-
-  if (targetTab === 'todo') {
-    todoList.classList.add('active');
-  } else if (targetTab === 'completed') {
-    completedList.classList.add('active');
-    completedContainer.classList.add('active');
-  } else if (targetTab === 'trash') {
-    trashList.classList.add('active');
-    trashContainer.classList.add('active');
+  if (arr.length === 0) {
+    const emptyMsg = document.createElement("li");
+    emptyMsg.className = "empty-msg";
+    if (mode === "todo") emptyMsg.textContent = "📝 할 일을 추가해보세요!";
+    if (mode === "completed") emptyMsg.textContent = "완료된 할 일이 아직 없어요 😴";
+    if (mode === "trash") emptyMsg.textContent = "🗑 휴지통이 비어있어요";
+    container.appendChild(emptyMsg);
+    return;
   }
+
+  arr.forEach((task, index) => {
+    const li = document.createElement("li");
+    li.innerHTML = `<span>${task.text}</span><div></div>`;
+    const btnBox = li.querySelector("div");
+
+    if (mode === "todo") {
+      const completeBtn = createBtn("✔", "complete-btn", () => completeTask(index));
+      const delBtn = createBtn("🗑", "delete-btn", () => moveToTrash("todo", index));
+      btnBox.append(completeBtn, delBtn);
+    }
+
+    if (mode === "completed") {
+      li.classList.add("completed");
+      const restoreBtn = createBtn("↩", "restore-btn", () => restoreFromCompleted(index));
+      const delBtn = createBtn("🗑", "delete-btn", () => moveToTrash("completed", index));
+      btnBox.append(restoreBtn, delBtn);
+    }
+
+    if (mode === "trash") {
+      const restoreBtn = createBtn("↩", "restore-btn", () => restoreFromTrash(index));
+      const removeBtn = createBtn("✖", "delete-btn", () => deleteForever(index));
+      btnBox.append(restoreBtn, removeBtn);
+    }
+
+    container.appendChild(li);
+  });
 }
 
-function emptyCompleted() {
-  completedList.innerHTML = '';
+function createBtn(text, cls, handler) {
+  const b = document.createElement("button");
+  b.textContent = text;
+  b.className = cls;
+  b.addEventListener("click", handler);
+  return b;
 }
 
-function emptyTrash() {
-  trashList.innerHTML = '';
+function completeTask(index) {
+  const [task] = tasks.todo.splice(index, 1);
+  tasks.completed.push(task);
+  saveData();
+  renderAll();
+}
+
+function moveToTrash(type, index) {
+  const [task] = tasks[type].splice(index, 1);
+  tasks.trash.push(task);
+  saveData();
+  renderAll();
+}
+
+function restoreFromCompleted(index) {
+  const [task] = tasks.completed.splice(index, 1);
+  tasks.todo.push(task);
+  saveData();
+  renderAll();
+}
+
+function restoreFromTrash(index) {
+  const [task] = tasks.trash.splice(index, 1);
+  tasks.todo.push(task);
+  saveData();
+  renderAll();
+}
+
+function deleteForever(index) {
+  tasks.trash.splice(index, 1);
+  saveData();
+  renderAll();
+}
+
+clearCompletedBtn.addEventListener("click", () => {
+  tasks.completed = [];
+  saveData();
+  renderAll();
+});
+clearTrashBtn.addEventListener("click", () => {
+  tasks.trash = [];
+  saveData();
+  renderAll();
+});
+
+themeToggle.addEventListener("click", () => {
+  document.body.classList.toggle("dark");
+  const isDark = document.body.classList.contains("dark");
+  themeToggle.textContent = isDark ? "☀️" : "🌙";
+  localStorage.setItem("theme", isDark ? "dark" : "light");
+});
+
+function saveData() {
+  localStorage.setItem("tasks", JSON.stringify(tasks));
 }

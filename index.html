@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>nevericx - To_Do_List</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
   <div class="container">
-    <h1>📋 To Do List</h1>
+    <div class="theme-area">
+      <button id="themeToggle" aria-label="테마 전환">🌙</button>
+      <p class="theme-label">테마 변경</p>
+    </div>
 
-  <div id="dateDisplay" class="date-display"></div>
+    <h1 id="dateTitle"></h1>
 
     <div class="input-box">
-      <input type="text" id="taskInput" placeholder="할 일을 입력하세요." />
+      <input type="text" id="taskInput" placeholder="할 일을 입력하세요" />
       <button id="addBtn">추가</button>
     </div>
 
@@ -25,14 +28,14 @@
 
     <ul id="todoList" class="list active"></ul>
 
-    <div id="completedContainer" class="list-container">
+    <div class="tab-content" id="completedSection">
       <ul id="completedList" class="list"></ul>
-      <button id="emptyCompletedBtn" class="empty-btn">완료 목록 비우기</button>
+      <button id="clearCompletedBtn" class="clear-btn hidden">완료 목록 비우기</button>
     </div>
 
-    <div id="trashContainer" class="list-container">
+    <div class="tab-content" id="trashSection">
       <ul id="trashList" class="list"></ul>
-      <button id="emptyTrashBtn" class="empty-btn">휴지통 비우기</button>
+      <button id="clearTrashBtn" class="clear-btn hidden">휴지통 비우기</button>
     </div>
   </div>
 
